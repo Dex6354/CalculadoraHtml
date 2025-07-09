@@ -16,8 +16,6 @@
     background: #121212;
     font-family: 'Roboto', sans-serif;
     user-select: none;
-    /* Removido display flex e alinhamento central */
-    /* Calculadora ficará no topo */
     min-height: 100vh;
   }
 
@@ -30,10 +28,9 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin: 12px auto 0 auto; /* Centraliza horizontalmente e cola no topo */
+    margin: 12px auto 0 auto;
   }
 
-  /* Visor da expressão (maior) */
   .display-expression,
   .display-result {
     background: #222;
@@ -50,7 +47,6 @@
   .display-expression {
     color: #aaa;
     border-radius: 18px 18px 0 0;
-    height: 46px;
     padding-bottom: 4px;
   }
 
@@ -144,6 +140,7 @@
       <button aria-label="Zero" data-num="0">0</button>
       <button aria-label="Ponto decimal" id="decimal">.</button>
       <button aria-label="Igual" id="equals" class="operator">=</button>
+      <button aria-label="Apagar" id="backspace">⌫</button>
     </div>
   </div>
 
@@ -175,6 +172,19 @@
       function clearAll() {
         expression = '0';
         lastPressedEquals = false;
+        updateDisplays();
+      }
+
+      function backspace() {
+        if (lastPressedEquals) {
+          clearAll();
+          return;
+        }
+        if (expression.length > 1) {
+          expression = expression.slice(0, -1);
+        } else {
+          expression = '0';
+        }
         updateDisplays();
       }
 
@@ -274,6 +284,8 @@
 
           if (button.id === 'clear') {
             clearAll();
+          } else if (button.id === 'backspace') {
+            backspace();
           } else if (button.id === 'plus-minus') {
             togglePlusMinus();
           } else if (button.id === 'percent') {
