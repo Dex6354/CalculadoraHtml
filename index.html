@@ -34,33 +34,28 @@
   }
 
   /* Visor da expressão (maior) */
-  .display-expression {
+  .display-expression,
+  .display-result {
     background: #222;
-    color: #aaa;
+    color: white;
     font-size: 22px;
-    padding: 8px 18px 4px 18px;
-    border-radius: 18px 18px 0 0;
+    padding: 8px 18px;
+    border-radius: 18px;
     text-align: right;
-    height: 28px;
+    height: 42px;
     overflow-x: auto;
     white-space: nowrap;
   }
 
-  /* Visor do resultado em tempo real (menor) */
+  .display-expression {
+    color: #aaa;
+    border-radius: 18px 18px 0 0;
+    height: 42px;
+    padding-bottom: 4px;
+  }
+
   .display-result {
-    background: #222;
-    color: white;
-    font-size: 38px;
-    font-weight: 400;
-    padding: 12px 18px;
     border-radius: 0 0 18px 18px;
-    text-align: right;
-    height: 60px;
-    overflow-x: auto;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
   }
 
   .buttons {
@@ -158,18 +153,15 @@
       const displayResult = document.getElementById('displayResult');
       const buttons = document.querySelectorAll('button');
 
-      let expression = '0';    // guarda a expressão exibida (ex: 12+7*3)
+      let expression = '0';
       let lastPressedEquals = false;
 
       function updateDisplays() {
         displayExpression.textContent = expression;
 
-        // Tenta calcular resultado ao vivo usando eval com segurança
         try {
-          // Evitar terminar expressão com operador (ex: 12+)
           const lastChar = expression.slice(-1);
           if (['+', '-', '*', '/'].includes(lastChar)) {
-            // calcula sem o último operador
             const safeExpr = expression.slice(0, -1);
             displayResult.textContent = safeExpr ? eval(safeExpr) : '0';
           } else {
@@ -205,8 +197,6 @@
           updateDisplays();
           return;
         }
-        // Previne múltiplos pontos seguidos no número atual
-        // Para isso, separar expressão pelos operadores e verificar último número
         const parts = expression.split(/[\+\-\*\/]/);
         const lastNum = parts[parts.length -1];
         if (!lastNum.includes('.')) {
@@ -216,20 +206,13 @@
       }
 
       function togglePlusMinus() {
-        // Alterna sinal do último número da expressão
-        // Vamos identificar o último número e trocar o sinal dele
-
-        // Se expressão for só 0, nada faz
         if (expression === '0') return;
 
-        // Separar expressão em tokens (números e operadores)
-        // Pra simplificar, vamos trabalhar com regex para achar último número e seu índice
         const match = expression.match(/(-?\d*\.?\d+)$/);
         if (match) {
           const lastNum = match[0];
           const startIndex = expression.lastIndexOf(lastNum);
 
-          // Verifica se começa com -, se sim, remove, se não, adiciona -
           let toggledNum;
           if (lastNum.startsWith('-')) {
             toggledNum = lastNum.substring(1);
@@ -242,7 +225,6 @@
       }
 
       function inputPercent() {
-        // Aplica % no último número da expressão, substituindo por valor dividido por 100
         const match = expression.match(/(\d*\.?\d+)$/);
         if (match) {
           const lastNum = match[0];
@@ -260,11 +242,9 @@
         if (lastPressedEquals) {
           lastPressedEquals = false;
         }
-        // Previne operadores repetidos
         if (expression.length === 0) return;
         const lastChar = expression.slice(-1);
         if (['+', '-', '*', '/'].includes(lastChar)) {
-          // Substitui operador final
           expression = expression.slice(0, -1) + op;
         } else {
           expression += op;
@@ -274,7 +254,6 @@
 
       function calculate() {
         try {
-          // Evita terminar com operador para cálculo
           const lastChar = expression.slice(-1);
           let safeExpr = expression;
           if (['+', '-', '*', '/'].includes(lastChar)) {
