@@ -14,12 +14,11 @@
 
   body {
     background: #121212;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
     font-family: 'Roboto', sans-serif;
     user-select: none;
+    /* Removido display flex e alinhamento central */
+    /* Calculadora ficará no topo */
+    min-height: 100vh;
   }
 
   .calculator {
@@ -31,6 +30,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    margin: 12px auto 0 auto; /* Centraliza horizontalmente e cola no topo */
   }
 
   /* Visor da expressão (maior) */
@@ -38,11 +38,11 @@
   .display-result {
     background: #222;
     color: white;
-    font-size: 22px;
+    font-size: 25px;
     padding: 8px 18px;
     border-radius: 18px;
     text-align: right;
-    height: 42px;
+    height: 46px;
     overflow-x: auto;
     white-space: nowrap;
   }
@@ -50,7 +50,7 @@
   .display-expression {
     color: #aaa;
     border-radius: 18px 18px 0 0;
-    height: 42px;
+    height: 46px;
     padding-bottom: 4px;
   }
 
