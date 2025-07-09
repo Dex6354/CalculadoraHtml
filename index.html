@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Calculadora Android</title>
+<style>
+  /* Reset básico */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background: #121212;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    user-select: none;
+  }
+
+  .calculator {
+    background: #1e1e1e;
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+    width: 320px;
+    padding: 24px 16px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .display {
+    background: #222;
+    color: white;
+    font-size: 48px;
+    font-weight: 400;
+    padding: 16px 24px;
+    border-radius: 24px;
+    text-align: right;
+    margin-bottom: 24px;
+    height: 72px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  button {
+    background: #333;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 24px;
+    font-weight: 500;
+    cursor: pointer;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.15s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    user-select: none;
+  }
+
+  button.operator {
+    background: #ff9500;
+    color: white;
+    box-shadow: 0 4px 8px rgba(255,149,0,0.6);
+  }
+
+  button.operator:active,
+  button:active {
+    background-color: #e07a00;
+  }
+
+  button.zero {
+    grid-column: span 2;
+    border-radius: 40px;
+    justify-content: flex-start;
+    padding-left: 36px;
+  }
+
+  /* Scrollbar do display */
+  .display::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .display::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+  <div class="calculator" role="application" aria-label="Calculadora estilo Android">
+    <div id="display" class="display" aria-live="polite" aria-atomic="true">0</div>
+    <div class="buttons">
+      <button aria-label="Limpar" id="clear">C</button>
+      <button aria-label="Mais ou menos" id="plus-minus">±</button>
+      <button aria-label="Porcentagem" id="percent">%</button>
+      <button aria-label="Divisão" class="operator" data-op="/">÷</button>
+
+      <button aria-label="7" data-num="7">7</button>
+      <button aria-label="8" data-num="8">8</button>
+      <button aria-label="9" data-num="9">9</button>
+      <button aria-label="Multiplicação" class="operator" data-op="*">×</button>
+
+      <button aria-label="4" data-num="4">4</button>
+      <button aria-label="5" data-num="5">5</button>
+      <button aria-label="6" data-num="6">6</button>
+      <button aria-label="Subtração" class="operator" data-op="-">−</button>
+
+      <button aria-label="1" data-num="1">1</button>
+      <button aria-label="2" data-num="2">2</button>
+      <button aria-label="3" data-num="3">3</button>
+      <button aria-label="Adição" class="operator" data-op="+">+</button>
+
+      <button aria-label="Zero" data-num="0" class="zero">0</button>
+      <button aria-label="Ponto decimal" id="decimal">.</button>
+      <button aria-label="Igual" class="operator" id="equals">=</button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const display = document.getElementById('display');
+      const buttons = document.querySelectorAll('button');
+      let currentInput = '0';
+      let previousInput = null;
+      let operator = null;
+      let lastPressedEquals = false;
+
+      function updateDisplay() {
+        display.textContent = currentInput;
+      }
+
+      function clearAll() {
+        currentInput = '0';
+        previousInput = null;
+        operator = null;
+        lastPressedEquals = false;
+        updateDisplay();
+      }
+
+      function inputNumber(num) {
+        if (lastPressedEquals) {
+          currentInput = num;
+          lastPressedEquals = false;
+          updateDisplay();
+          return;
+        }
+        if (currentInput === '0') {
+          currentInput = num;
+        } else {
+          currentInput += num;
+        }
+        updateDisplay();
+      }
+
+      function inputDecimal() {
+        if (lastPressedEquals) {
+          currentInput = '0.';
+          lastPressedEquals = false;
+          updateDisplay();
+          return;
+        }
+        if (!currentInput.includes('.')) {
+          currentInput += '.';
+          updateDisplay();
+        }
+      }
+
+      function togglePlusMinus() {
+        if (currentInput === '0') return;
+        if (currentInput.startsWith('-')) {
+          currentInput = currentInput.substring(1);
+        } else {
+          currentInput = '-' + currentInput;
+        }
+        updateDisplay();
+      }
+
+      function inputPercent() {
+        let num = parseFloat(currentInput);
+        if (!isNaN(num)) {
+          num = num / 100;
+          currentInput = String(num);
+          updateDisplay();
+        }
+      }
+
+      function calculate() {
+        if (operator === null || previousInput === null) return;
+        let result;
+        const prev = parseFloat(previousInput);
+        const current = parseFloat(currentInput);
+
+        if (isNaN(prev) || isNaN(current)) return;
+
+        switch(operator) {
+          case '+':
+            result = prev + current;
+            break;
+          case '-':
+            result = prev - current;
+            break;
+          case '*':
+            result = prev * current;
+            break;
+          case '/':
+            if (current === 0) {
+              alert("Erro: Divisão por zero");
+              clearAll();
+              return;
+            }
+            result = prev / current;
+            break;
+          default:
+            return;
+        }
+        currentInput = String(result);
+        operator = null;
+        previousInput = null;
+        updateDisplay();
+      }
+
+      function handleOperator(op) {
+        if (operator && !lastPressedEquals) {
+          calculate();
+        }
+        previousInput = currentInput;
+        operator = op;
+        currentInput = '0';
+        lastPressedEquals = false;
+      }
+
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          if (button.id === 'clear') {
+            clearAll();
+          } else if (button.id === 'plus-minus') {
+            togglePlusMinus();
+          } else if (button.id === 'percent') {
+            inputPercent();
+          } else if (button.id === 'decimal') {
+            inputDecimal();
+          } else if (button.classList.contains('operator')) {
+            if (button.id === 'equals') {
+              calculate();
+              lastPressedEquals = true;
+            } else {
+              handleOperator(button.dataset.op);
+            }
+          } else if (button.dataset.num) {
+            inputNumber(button.dataset.num);
+          }
+        });
+      });
+
+      // Inicializa display
+      updateDisplay();
+    })();
+  </script>
+</body>
+  </html>
+  
