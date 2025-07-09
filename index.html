@@ -5,8 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Calculadora Android</title>
 <style>
+  /* Reset básico para garantir consistência */
   * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
 
   body {
@@ -14,8 +17,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
+    min-height: 100vh;
     font-family: 'Roboto', sans-serif;
     user-select: none;
   }
@@ -24,31 +26,47 @@
     background: #1e1e1e;
     border-radius: 24px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.7);
-    width: 320px;
-    padding: 24px 16px 32px;
+    width: 270px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
+    gap: 8px;
   }
 
-  .display {
+  /* Visor da expressão (maior) */
+  .display-expression {
     background: #222;
-    color: white;
-    font-size: 48px;
-    font-weight: 400;
-    padding: 16px 24px;
-    border-radius: 24px;
+    color: #aaa;
+    font-size: 22px;
+    padding: 8px 18px 4px 18px;
+    border-radius: 18px 18px 0 0;
     text-align: right;
-    margin-bottom: 24px;
-    height: 72px;
+    height: 28px;
     overflow-x: auto;
     white-space: nowrap;
   }
 
+  /* Visor do resultado em tempo real (menor) */
+  .display-result {
+    background: #222;
+    color: white;
+    font-size: 38px;
+    font-weight: 400;
+    padding: 12px 18px;
+    border-radius: 0 0 18px 18px;
+    text-align: right;
+    height: 60px;
+    overflow-x: auto;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
   .buttons {
     display: grid;
-    /* Correção aqui: usar 'repeat(4, 1fr)' para 4 colunas de largura igual */
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 8px;
   }
 
   button {
@@ -56,7 +74,7 @@
     border: none;
     border-radius: 50%;
     color: white;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 500;
     cursor: pointer;
     aspect-ratio: 1 / 1;
@@ -66,182 +84,215 @@
     transition: background-color 0.15s ease-in-out;
     box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     user-select: none;
+    line-height: 1;
   }
 
   button.operator {
-    background: #ff9500;
+    background: #ff6f00;
     color: white;
-    box-shadow: 0 4px 8px rgba(255,149,0,0.6);
   }
 
-  button.operator:active,
-  button:active {
-    background-color: #e07a00;
+  button.operator:active {
+    background-color: #e65c00;
+    transform: translateY(1px);
   }
 
-  button.zero {
-    grid-column: span 2;
-    border-radius: 40px;
-    justify-content: flex-start;
-    padding-left: 36px;
+  button:active:not(.operator) {
+    background-color: #555;
+    transform: translateY(1px);
   }
 
-  /* Scrollbar do display */
-  .display::-webkit-scrollbar {
+  /* Scrollbar do display para melhor visualização */
+  .display-expression::-webkit-scrollbar,
+  .display-result::-webkit-scrollbar {
     height: 6px;
   }
 
-  .display::-webkit-scrollbar-thumb {
+  .display-expression::-webkit-scrollbar-thumb,
+  .display-result::-webkit-scrollbar-thumb {
     background-color: #555;
+    border-radius: 3px;
+  }
+
+  .display-expression::-webkit-scrollbar-track,
+  .display-result::-webkit-scrollbar-track {
+    background-color: #333;
     border-radius: 3px;
   }
 </style>
 </head>
 <body>
   <div class="calculator" role="application" aria-label="Calculadora estilo Android">
-    <div id="display" class="display" aria-live="polite" aria-atomic="true">0</div>
+    <div id="displayExpression" class="display-expression" aria-live="polite" aria-atomic="true">0</div>
+    <div id="displayResult" class="display-result" aria-live="polite" aria-atomic="true">0</div>
     <div class="buttons">
       <button aria-label="Limpar" id="clear">C</button>
       <button aria-label="Mais ou menos" id="plus-minus">±</button>
       <button aria-label="Porcentagem" id="percent">%</button>
-      <button aria-label="Divisão" class="operator" data-op="/">÷</button>
+      <button aria-label="Divisão" data-op="/" class="operator">÷</button>
 
       <button aria-label="7" data-num="7">7</button>
       <button aria-label="8" data-num="8">8</button>
       <button aria-label="9" data-num="9">9</button>
-      <button aria-label="Multiplicação" class="operator" data-op="*">×</button>
+      <button aria-label="Multiplicação" data-op="*" class="operator">×</button>
 
       <button aria-label="4" data-num="4">4</button>
       <button aria-label="5" data-num="5">5</button>
       <button aria-label="6" data-num="6">6</button>
-      <button aria-label="Subtração" class="operator" data-op="-">−</button>
+      <button aria-label="Subtração" data-op="-" class="operator">−</button>
 
       <button aria-label="1" data-num="1">1</button>
       <button aria-label="2" data-num="2">2</button>
       <button aria-label="3" data-num="3">3</button>
-      <button aria-label="Adição" class="operator" data-op="+">+</button>
+      <button aria-label="Adição" data-op="+" class="operator">+</button>
 
-      <button aria-label="Zero" data-num="0" class="zero">0</button>
+      <button aria-label="Zero" data-num="0">0</button>
       <button aria-label="Ponto decimal" id="decimal">.</button>
-      <button aria-label="Igual" class="operator" id="equals">=</button>
+      <button aria-label="Igual" id="equals" class="operator">=</button>
     </div>
   </div>
 
   <script>
     (() => {
-      const display = document.getElementById('display');
+      const displayExpression = document.getElementById('displayExpression');
+      const displayResult = document.getElementById('displayResult');
       const buttons = document.querySelectorAll('button');
-      let currentInput = '0';
-      let previousInput = null;
-      let operator = null;
+
+      let expression = '0';    // guarda a expressão exibida (ex: 12+7*3)
       let lastPressedEquals = false;
 
-      function updateDisplay() {
-        display.textContent = currentInput;
+      function updateDisplays() {
+        displayExpression.textContent = expression;
+
+        // Tenta calcular resultado ao vivo usando eval com segurança
+        try {
+          // Evitar terminar expressão com operador (ex: 12+)
+          const lastChar = expression.slice(-1);
+          if (['+', '-', '*', '/'].includes(lastChar)) {
+            // calcula sem o último operador
+            const safeExpr = expression.slice(0, -1);
+            displayResult.textContent = safeExpr ? eval(safeExpr) : '0';
+          } else {
+            displayResult.textContent = expression ? eval(expression) : '0';
+          }
+        } catch {
+          displayResult.textContent = 'Erro';
+        }
       }
 
       function clearAll() {
-        currentInput = '0';
-        previousInput = null;
-        operator = null;
+        expression = '0';
         lastPressedEquals = false;
-        updateDisplay();
+        updateDisplays();
       }
 
-      function inputNumber(num) {
+      function appendNumber(num) {
         if (lastPressedEquals) {
-          currentInput = num;
+          expression = num;
           lastPressedEquals = false;
-          updateDisplay();
-          return;
-        }
-        if (currentInput === '0') {
-          currentInput = num;
+        } else if (expression === '0') {
+          expression = num;
         } else {
-          currentInput += num;
+          expression += num;
         }
-        updateDisplay();
+        updateDisplays();
       }
 
-      function inputDecimal() {
+      function appendDecimal() {
         if (lastPressedEquals) {
-          currentInput = '0.';
+          expression = '0.';
           lastPressedEquals = false;
-          updateDisplay();
+          updateDisplays();
           return;
         }
-        if (!currentInput.includes('.')) {
-          currentInput += '.';
-          updateDisplay();
+        // Previne múltiplos pontos seguidos no número atual
+        // Para isso, separar expressão pelos operadores e verificar último número
+        const parts = expression.split(/[\+\-\*\/]/);
+        const lastNum = parts[parts.length -1];
+        if (!lastNum.includes('.')) {
+          expression += '.';
+          updateDisplays();
         }
       }
 
       function togglePlusMinus() {
-        if (currentInput === '0') return;
-        if (currentInput.startsWith('-')) {
-          currentInput = currentInput.substring(1);
-        } else {
-          currentInput = '-' + currentInput;
+        // Alterna sinal do último número da expressão
+        // Vamos identificar o último número e trocar o sinal dele
+
+        // Se expressão for só 0, nada faz
+        if (expression === '0') return;
+
+        // Separar expressão em tokens (números e operadores)
+        // Pra simplificar, vamos trabalhar com regex para achar último número e seu índice
+        const match = expression.match(/(-?\d*\.?\d+)$/);
+        if (match) {
+          const lastNum = match[0];
+          const startIndex = expression.lastIndexOf(lastNum);
+
+          // Verifica se começa com -, se sim, remove, se não, adiciona -
+          let toggledNum;
+          if (lastNum.startsWith('-')) {
+            toggledNum = lastNum.substring(1);
+          } else {
+            toggledNum = '-' + lastNum;
+          }
+          expression = expression.slice(0, startIndex) + toggledNum;
+          updateDisplays();
         }
-        updateDisplay();
       }
 
       function inputPercent() {
-        let num = parseFloat(currentInput);
-        if (!isNaN(num)) {
-          num = num / 100;
-          currentInput = String(num);
-          updateDisplay();
+        // Aplica % no último número da expressão, substituindo por valor dividido por 100
+        const match = expression.match(/(\d*\.?\d+)$/);
+        if (match) {
+          const lastNum = match[0];
+          const startIndex = expression.lastIndexOf(lastNum);
+          const num = parseFloat(lastNum);
+          if (!isNaN(num)) {
+            const percentNum = (num / 100).toString();
+            expression = expression.slice(0, startIndex) + percentNum;
+            updateDisplays();
+          }
         }
+      }
+
+      function appendOperator(op) {
+        if (lastPressedEquals) {
+          lastPressedEquals = false;
+        }
+        // Previne operadores repetidos
+        if (expression.length === 0) return;
+        const lastChar = expression.slice(-1);
+        if (['+', '-', '*', '/'].includes(lastChar)) {
+          // Substitui operador final
+          expression = expression.slice(0, -1) + op;
+        } else {
+          expression += op;
+        }
+        updateDisplays();
       }
 
       function calculate() {
-        if (operator === null || previousInput === null) return;
-        let result;
-        const prev = parseFloat(previousInput);
-        const current = parseFloat(currentInput);
-
-        if (isNaN(prev) || isNaN(current)) return;
-
-        switch(operator) {
-          case '+':
-            result = prev + current;
-            break;
-          case '-':
-            result = prev - current;
-            break;
-          case '*':
-            result = prev * current;
-            break;
-          case '/':
-            if (current === 0) {
-              alert("Erro: Divisão por zero");
-              clearAll();
-              return;
-            }
-            result = prev / current;
-            break;
-          default:
-            return;
+        try {
+          // Evita terminar com operador para cálculo
+          const lastChar = expression.slice(-1);
+          let safeExpr = expression;
+          if (['+', '-', '*', '/'].includes(lastChar)) {
+            safeExpr = expression.slice(0, -1);
+          }
+          const result = eval(safeExpr);
+          expression = result.toString();
+          lastPressedEquals = true;
+          updateDisplays();
+        } catch {
+          displayResult.textContent = 'Erro';
         }
-        currentInput = String(result);
-        operator = null;
-        previousInput = null;
-        updateDisplay();
-      }
-
-      function handleOperator(op) {
-        if (operator && !lastPressedEquals) {
-          calculate();
-        }
-        previousInput = currentInput;
-        operator = op;
-        currentInput = '0';
-        lastPressedEquals = false;
       }
 
       buttons.forEach(button => {
         button.addEventListener('click', () => {
+          const op = button.dataset.op;
+
           if (button.id === 'clear') {
             clearAll();
           } else if (button.id === 'plus-minus') {
@@ -249,21 +300,18 @@
           } else if (button.id === 'percent') {
             inputPercent();
           } else if (button.id === 'decimal') {
-            inputDecimal();
-          } else if (button.classList.contains('operator')) {
-            if (button.id === 'equals') {
-              calculate();
-              lastPressedEquals = true;
-            } else {
-              handleOperator(button.dataset.op);
-            }
+            appendDecimal();
+          } else if (button.id === 'equals') {
+            calculate();
+          } else if (op) {
+            appendOperator(op);
           } else if (button.dataset.num) {
-            inputNumber(button.dataset.num);
+            appendNumber(button.dataset.num);
           }
         });
       });
 
-      updateDisplay();
+      updateDisplays();
     })();
   </script>
 </body>
