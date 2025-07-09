@@ -31,27 +31,42 @@
     margin: 12px auto 0 auto;
   }
 
-  .display-expression,
-  .display-result {
+  .display {
     background: #222;
-    color: white;
-    font-size: 25px;
-    padding: 8px 18px;
     border-radius: 18px;
-    text-align: right;
-    height: 52px;
+    padding: 8px 18px;
+    height: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     overflow-x: auto;
     white-space: nowrap;
+    user-select: text;
   }
 
   .display-expression {
-    color: #aaa;
-    border-radius: 18px 18px 0 0;
-    padding-bottom: 4px;
+    color: white;
+    font-size: 25px;
+    text-align: right;
+    line-height: 1.2;
   }
 
   .display-result {
-    border-radius: 0 0 18px 18px;
+    color: #999;
+    font-size: 20px;
+    text-align: right;
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+
+  .display-result.empty::before {
+    content: "";
+  }
+
+  .display-result:not(.empty)::before {
+    content: "=";
+    margin-right: 6px;
+    color: #999;
   }
 
   .buttons {
@@ -94,19 +109,16 @@
   }
 
   /* Scrollbar do display para melhor visualização */
-  .display-expression::-webkit-scrollbar,
-  .display-result::-webkit-scrollbar {
+  .display::-webkit-scrollbar {
     height: 6px;
   }
 
-  .display-expression::-webkit-scrollbar-thumb,
-  .display-result::-webkit-scrollbar-thumb {
+  .display::-webkit-scrollbar-thumb {
     background-color: #555;
     border-radius: 3px;
   }
 
-  .display-expression::-webkit-scrollbar-track,
-  .display-result::-webkit-scrollbar-track {
+  .display::-webkit-scrollbar-track {
     background-color: #333;
     border-radius: 3px;
   }
@@ -114,8 +126,11 @@
 </head>
 <body>
   <div class="calculator" role="application" aria-label="Calculadora estilo Android">
-    <div id="displayExpression" class="display-expression" aria-live="polite" aria-atomic="true">0</div>
-    <div id="displayResult" class="display-result" aria-live="polite" aria-atomic="true">0</div>
+    <div id="display" class="display" aria-live="polite" aria-atomic="true">
+      <div id="displayExpression" class="display-expression">0</div>
+      <div id="displayResult" class="display-result empty"></div>
+    </div>
+
     <div class="buttons">
       <button aria-label="Limpar" id="clear">C</button>
       <button aria-label="Mais ou menos" id="plus-minus">±</button>
@@ -159,19 +174,35 @@
         try {
           const lastChar = expression.slice(-1);
           if (['+', '-', '*', '/'].includes(lastChar)) {
+            // Se a expressão termina com operador, calcula sem ele
             const safeExpr = expression.slice(0, -1);
-            displayResult.textContent = safeExpr ? eval(safeExpr) : '0';
+            if(safeExpr){
+              displayResult.textContent = eval(safeExpr);
+              displayResult.classList.remove('empty');
+            } else {
+              displayResult.textContent = '';
+              displayResult.classList.add('empty');
+            }
           } else {
-            displayResult.textContent = expression ? eval(expression) : '0';
+            // Quando expressão termina normal
+            if(expression){
+              displayResult.textContent = eval(expression);
+              displayResult.classList.remove('empty');
+            } else {
+              displayResult.textContent = '';
+              displayResult.classList.add('empty');
+            }
           }
         } catch {
           displayResult.textContent = 'Erro';
+          displayResult.classList.remove('empty');
         }
       }
 
       function clearAll() {
         expression = '0';
         lastPressedEquals = false;
+        displayResult.classList.add('empty');
         updateDisplays();
       }
 
@@ -275,6 +306,7 @@
           updateDisplays();
         } catch {
           displayResult.textContent = 'Erro';
+          displayResult.classList.remove('empty');
         }
       }
 
