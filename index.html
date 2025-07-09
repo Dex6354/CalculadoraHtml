@@ -46,8 +46,8 @@
 
   .buttons {
     display: grid;
-    /* Aqui está a modificação principal */
-    grid-template-columns: 1.6fr 1fr 0.8fr 0.8fr;
+    /* Correção aqui: usar 'repeat(4, 1fr)' para 4 colunas de largura igual */
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
   }
 
