@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Calculadora Android</title>
 <style>
+  /* Reset básico para garantir consistência */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -33,13 +34,12 @@
   .display {
     background: #222;
     border-radius: 18px;
-    padding: 8px 18px;
+    padding: 15px 18px;
     height: 75px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow-x: auto;     /* rolagem lateral habilitada */
-    overflow-y: hidden;   /* rolagem vertical desabilitada */
+    overflow-x: auto;
     white-space: nowrap;
     user-select: text;
   }
@@ -108,7 +108,7 @@
     transform: translateY(1px);
   }
 
-  /* Scrollbar lateral customizada opcional */
+  /* Scrollbar do display para melhor visualização */
   .display::-webkit-scrollbar {
     height: 6px;
   }
@@ -174,8 +174,9 @@
         try {
           const lastChar = expression.slice(-1);
           if (['+', '-', '*', '/'].includes(lastChar)) {
+            // Se a expressão termina com operador, calcula sem ele
             const safeExpr = expression.slice(0, -1);
-            if (safeExpr) {
+            if(safeExpr){
               displayResult.textContent = eval(safeExpr);
               displayResult.classList.remove('empty');
             } else {
@@ -183,7 +184,8 @@
               displayResult.classList.add('empty');
             }
           } else {
-            if (expression) {
+            // Quando expressão termina normal
+            if(expression){
               displayResult.textContent = eval(expression);
               displayResult.classList.remove('empty');
             } else {
@@ -251,7 +253,13 @@
         if (match) {
           const lastNum = match[0];
           const startIndex = expression.lastIndexOf(lastNum);
-          let toggledNum = lastNum.startsWith('-') ? lastNum.substring(1) : '-' + lastNum;
+
+          let toggledNum;
+          if (lastNum.startsWith('-')) {
+            toggledNum = lastNum.substring(1);
+          } else {
+            toggledNum = '-' + lastNum;
+          }
           expression = expression.slice(0, startIndex) + toggledNum;
           updateDisplays();
         }
