@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Calculadora Android</title>
 <style>
-  /* Reset básico para garantir consistência */
   * {
     box-sizing: border-box;
     margin: 0;
@@ -35,11 +34,11 @@
     background: #222;
     border-radius: 18px;
     padding: 8px 18px;
-    height: 100px;
+    height: 75px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    overflow-x: auto;
+    overflow: hidden; /* barra de rolagem removida */
     white-space: nowrap;
     user-select: text;
   }
@@ -49,6 +48,8 @@
     font-size: 25px;
     text-align: right;
     line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .display-result {
@@ -57,6 +58,8 @@
     text-align: right;
     line-height: 1.2;
     margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .display-result.empty::before {
@@ -106,21 +109,6 @@
   button:active:not(.operator) {
     background-color: #555;
     transform: translateY(1px);
-  }
-
-  /* Scrollbar do display para melhor visualização */
-  .display::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .display::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 3px;
-  }
-
-  .display::-webkit-scrollbar-track {
-    background-color: #333;
-    border-radius: 3px;
   }
 </style>
 </head>
@@ -174,9 +162,8 @@
         try {
           const lastChar = expression.slice(-1);
           if (['+', '-', '*', '/'].includes(lastChar)) {
-            // Se a expressão termina com operador, calcula sem ele
             const safeExpr = expression.slice(0, -1);
-            if(safeExpr){
+            if (safeExpr) {
               displayResult.textContent = eval(safeExpr);
               displayResult.classList.remove('empty');
             } else {
@@ -184,8 +171,7 @@
               displayResult.classList.add('empty');
             }
           } else {
-            // Quando expressão termina normal
-            if(expression){
+            if (expression) {
               displayResult.textContent = eval(expression);
               displayResult.classList.remove('empty');
             } else {
@@ -253,13 +239,7 @@
         if (match) {
           const lastNum = match[0];
           const startIndex = expression.lastIndexOf(lastNum);
-
-          let toggledNum;
-          if (lastNum.startsWith('-')) {
-            toggledNum = lastNum.substring(1);
-          } else {
-            toggledNum = '-' + lastNum;
-          }
+          let toggledNum = lastNum.startsWith('-') ? lastNum.substring(1) : '-' + lastNum;
           expression = expression.slice(0, startIndex) + toggledNum;
           updateDisplays();
         }
